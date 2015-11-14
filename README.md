@@ -1,0 +1,2 @@
+# rsslib
+RSS Library (Scala)
