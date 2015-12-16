@@ -25,14 +25,29 @@ object RSSParser{
     def processItemChild(element : scala.xml.Node) : Option[(String,Any)] ={
       element match {
         case _:PCData => None
-        case g if element.label == "guid" => Some((element.label,
-                                                Guid(element.flatMap(_.descendant).mkString.trim
-                                              )))
+        case g if element.label == "guid" => parseGuid(element)
+        case enclosure if element.label == "enclosure" => parseEnclosure(element)
         case _ => Some((element.label,element.flatMap(_.descendant).mkString.trim))
       }
     }
 
-    def parseItem(element : scala.xml.Elem) : RSSItem = {
-        RSSItem(yank(element,"title"),yank(element,"link"), yank(element,"description"))
+    def parseItem(element : scala.xml.Elem) : Item = {
+        Item(yank(element,"title"),yank(element,"link"), yank(element,"description"))
+    }
+    
+    def parseGuid(element : scala.xml.Node) : Option[(String,Guid)] = {
+      val plink = (element \\ "@permalink").map(_.text)
+      Some((element.label,Guid(element.flatMap(_.descendant).mkString.trim,
+         plink.length match {
+             case 1 => plink.head.toBoolean
+             case _ => true
+         }))) 
+    }
+    
+    def parseEnclosure(element : scala.xml.Node) : Option[(String,Enclosure)] = {
+      val url = (element \\ "@url").map(_.text).head
+      val length = (element \\ "@length").map(_.text).head.toInt
+      val enclosureType = (element \\ "@type").map(_.text).head
+      Some((element.label,Enclosure(url,length,enclosureType))) 
     }
   }

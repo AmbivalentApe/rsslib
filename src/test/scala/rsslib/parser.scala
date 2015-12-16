@@ -12,9 +12,21 @@ class ParserSpec extends FlatSpec{
 	"ProcessItemChild for a guid tag" should "produce a Guid case class" in {
 		val item = <item><guid>hello</guid></item>
 		assert(RSSParser.processItemChild((item \\ "guid")(0)).get==("guid",Guid("hello",true)))
-		val item_notperm = <item><guid permalink="false">hello</guid></item>
-		//assert(RSSParser.processItemChild((item_notperm \\ "guid")(0)).get==("guid",Guid("hello",false)))
 	}
+	"ProcessItemChild for a guid tag with a permalink" should "produce a Guid case class" in {
+	  val item_notperm = <item><guid permalink="false">hello</guid></item>
+		assert(RSSParser.processItemChild((item_notperm \\ "guid")(0)).get==("guid",Guid("hello",false)))
+		val item_perm = <item><guid permalink="true">hello</guid></item>
+		assert(RSSParser.processItemChild((item_perm \\ "guid")(0)).get==("guid",Guid("hello",true)))
+	}
+	
+	
+	"ProcessItemChild for an enclosure tag" should "produce an Enclosure case class" in {
+		val item = <item><enclosure url="http://sdsd" length="99" type="audio/mpeg">hello</enclosure></item>
+		assert(RSSParser.processItemChild((item \\ "enclosure")(0)).get==("enclosure",Enclosure("http://sdsd",99,"audio/mpeg")))
+	}
+	
+	
 	"buildItemMap" should "return a map" in {
 		val item = <item><x>hello</x></item>
 		assert(RSSParser.buildItemMap(item)==Map("x"->"hello"))
@@ -40,8 +52,9 @@ class ParserSpec extends FlatSpec{
 
 			assert(RSSParser.parseItem(item).title.get=="Linguistics Club")
 			assert(RSSParser.parseItem(item).link.get=="http://xkcd.com/1602/")
-			//println(RSSParser.parseItem(item).description)
 			assert(RSSParser.parseItem(item).description.get=="<img src=\"http://imgs.xkcd.com/comics/linguistics_club.png\" title=\"If that's too easy, you could try joining Tautology Club, which meets on the date of the Tautology Club meeting.\" alt=\"If that's too easy, you could try joining Tautology Club, which meets on the date of the Tautology Club meeting.\"/>")
 
 		}
+	
+	
 	}
